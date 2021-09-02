@@ -1,0 +1,23 @@
+# Architecture
+arch: swin_tiny_patch4_window7_224
+
+# ===== Dataset ===== #
+data: ../data
+set: ImageNet
+#set: Hymenoptera
+name: baseline
+num_classes: 1000
+
+# ===== Learning Rate Policy ======== #
+optimizer: adamw
+lr: 0.0005
+lr_policy: cosine_lr
+
+# ===== Network training config ===== #
+epochs: 100
+weight_decay: 0.05
+momentum: 0.9
+batch_size: 128
+
+# ===== Hardware setup ===== #
+num_parallel_workers: 8
