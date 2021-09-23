@@ -14,5 +14,22 @@
 # limitations under the License.
 # ============================================================================
 
-cmake . -DMINDSPORE_PATH="`pip3.7 show mindspore-ascend | grep Location | awk '{print $2"/mindspore"}' | xargs realpath`"
-make
+config=$2
+
+ulimit -u unlimited
+export DEVICE_NUM=8
+export RANK_SIZE=8
+RANK_TABLE_FILE=$(realpath $1)
+export RANK_TABLE_FILE
+echo "RANK_TABLE_FILE=${RANK_TABLE_FILE}"
+
+export SERVER_ID=0
+rank_start=$((DEVICE_NUM * SERVER_ID))
+for ((i = 0; i < ${DEVICE_NUM}; i++)); do
+  export DEVICE_ID=$i
+  export RANK_ID=$((rank_start + i))
+
+  echo "start training for rank $RANK_ID, device $DEVICE_ID, $config"
+  python train.py --device-id $i --config $config >train$i.log 2>&1 &
+  cd ..
+done

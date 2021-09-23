@@ -1,19 +1,22 @@
 # Architecture
-arch: effnetv2_s
+arch: UNet_3Plus
 
 # ===== Dataset ===== #
 data: ../data
-set: ImageNet
+set: LiTS2017
 name: baseline
-num_classes: 1000
+num_classes: 3
 
 # ===== Learning Rate Policy ======== #
-optimizer: adamw
-base_lr: 0.0005
-warmup_lr: 0.00000007
-min_lr: 0.000006
+optimizer: momentum
+base_lr: 0.1
+warmup_lr: 0.
+min_lr: 0.00001
 lr_scheduler: cosine_lr
-warmup_length: 20
+warmup_length: 0.
+
+# ====== Network Arch config ======== #
+window_size: 11
 
 
 # ===== Network training config ===== #
@@ -21,10 +24,12 @@ amp_level: O3
 keep_bn_fp32: True
 beta: [0.9, 0.999]
 clip_value: 0.05
-epochs: 300
-weight_decay: 0.05
+epochs: 100
+weight_decay: 0.000001
 momentum: 0.9
 batch_size: 128
+enable_graph_kernel: True
 
 # ===== Hardware setup ===== #
-num_parallel_workers: 20
+num_parallel_workers: 12
+device_target: GPU

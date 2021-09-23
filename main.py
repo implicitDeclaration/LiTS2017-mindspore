@@ -17,15 +17,15 @@
 from mindspore import Model
 from mindspore import context
 from mindspore.common import set_seed
+from mindspore.train.callback import ModelCheckpoint, CheckpointConfig, LossMonitor, TimeMonitor
+from mindspore.train.loss_scale_manager import DynamicLossScaleManager, FixedLossScaleManager
 
 from args import args
-from utils.critetion import get_criterion
+from utils.criterion import get_criterion
+from utils.eval_utils import DiceCof
 from utils.get_misc import get_dataset, \
-    set_device, get_trainer, \
-    get_model, pretrained, get_directories, \
-    resume
+    set_device, get_model, pretrained
 from utils.optimizer import get_optimizer
-from utils.schedulers import get_policy
 
 set_seed(2)
 
@@ -36,76 +36,53 @@ def main(args):
         1: context.PYNATIVE_MODE
     }
     context.set_context(mode=mode[args.graph_mode], device_target=args.device_target)
-    context.set_context(enable_graph_kernel=True)
+    context.set_context(enable_graph_kernel=args.enable_graph_kernel)
+    if args.device_target == "Ascend":
+        context.set_context(enable_auto_mixed_precision=True)
     rank = set_device(args)
-    train, validate = get_trainer(args)
 
     # get model
-    model = get_model(args)
-    if args.pretrained:
-        pretrained(args, model)
+    if args.arch != "UNet_3Plus":
+        raise ValueError(f"Arch {args.arch} has not been supported yet.")
 
-    optimizer = get_optimizer(args, model)
+    net = get_model(args)
+
+    if args.pretrained:
+        pretrained(args, net)
     data = get_dataset(args)
-    lr_policy = get_policy(args.lr_policy)(optimizer, args)
+    batch_num = data.train_dataset.get_dataset_size()
+    optimizer = get_optimizer(args, net, batch_num)
 
     criterion = get_criterion(args)
 
-    if args.resume:
-        resume(args, model, optimizer)
-
-    # Data loading code
-    if args.evaluate:
-        acc1, acc5 = validate(
-            data.val_loader, model, criterion, args, writer=None, epoch=args.start_epoch
-        )
-        return
-
-    loss_scale_manager = None
-
-    # optionally resume from a checkpoint
-    best_acc1 = 0.0
-    best_acc5 = 0.0
-    best_train_acc1 = 0.0
-    best_train_acc5 = 0.0
-
-    if args.resume:
-        best_acc1 = resume(args, model, optimizer)
-
-    # Data loading code
-    if args.evaluate:
-        acc1, acc5 = validate(
-            data.val_loader, model, criterion, args, writer=None, epoch=args.start_epoch
-        )
-
-        return
-
-    # Set up directories
-    run_base_dir, ckpt_base_dir, log_base_dir = get_directories(args)
-    args.ckpt_base_dir = ckpt_base_dir
-
     # save a yaml file to read to record parameters
 
-    from mindspore.train.callback import ModelCheckpoint, CheckpointConfig, LossMonitor, TimeMonitor
     if args.is_dynamic_loss_scale:
         args.loss_scale = 1
-    from mindspore.train.loss_scale_manager import DynamicLossScaleManager, FixedLossScaleManager
 
     if args.is_dynamic_loss_scale == 1:
         loss_scale_manager = DynamicLossScaleManager(init_loss_scale=65536, scale_factor=2, scale_window=2000)
     else:
-        loss_scale_manager = FixedLossScaleManager(args.loss_scale, drop_overflow_update=False)
+        loss_scale_manager = FixedLossScaleManager(args.loss_scale, drop_overflow_update=True)
 
-    model = Model(model, loss_fn=criterion, optimizer=optimizer, metrics={'acc'},
-                  amp_level="O3", keep_batchnorm_fp32=True, loss_scale_manager=loss_scale_manager)
+    model = Model(net, loss_fn=criterion, optimizer=optimizer, metrics={"dice": DiceCof()},
+                  amp_level=args.amp_level, keep_batchnorm_fp32=args.keep_bn_fp32,
+                  loss_scale_manager=loss_scale_manager)
 
-    config_ck = CheckpointConfig(save_checkpoint_steps=10007, keep_checkpoint_max=40)
-    time_cb = TimeMonitor(data_size=10007)
+    if args.evaluate:
+        acc = model.eval(data.val_dataset)
+        print(f"model's dice coff is {acc}")
+        return
+
+    config_ck = CheckpointConfig(save_checkpoint_steps=data.train_dataset.get_dataset_size(), keep_checkpoint_max=40)
+    time_cb = TimeMonitor(data_size=data.train_dataset.get_dataset_size())
     ckpt_save_dir = "./ckpt_" + str(rank) + "/"
-    ckpoint_cb = ModelCheckpoint(prefix="swin_transformer", directory=ckpt_save_dir,
+    ckpoint_cb = ModelCheckpoint(prefix=args.arch + str(rank), directory=ckpt_save_dir,
                                  config=config_ck)
     loss_cb = LossMonitor()
-    model.train(args.epochs, data.train_dataset, callbacks=[time_cb, ckpoint_cb, loss_cb])
+    print("begin train")
+    model.train(args.epochs, data.train_dataset, callbacks=[time_cb, ckpoint_cb, loss_cb], dataset_sink_mode=True)
+
     print("train success")
 
 

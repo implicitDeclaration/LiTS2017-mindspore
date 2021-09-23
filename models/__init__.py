@@ -1,21 +1,22 @@
-from .swintransformer import swin_base_patch4_window7_224, \
-    swin_base_patch4_window12_384, \
-    swin_large_patch4_window7_224, \
-    swin_large_patch4_window12_384, \
-    swin_small_patch4_window7_224, \
-    swin_tiny_patch4_window7_224
+# Copyright 2020 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================
 
-from .efficientnetv2 import effnetv2_s, effnetv2_m, effnetv2_l, effnetv2_xl
+from .unet3p import UNet_3Plus, UNet_3Plus_DeepSup, UNet_3Plus_DeepSup_CGM
 
 __all__ = [
-    "swin_base_patch4_window7_224",
-    "swin_base_patch4_window12_384",
-    "swin_large_patch4_window7_224",
-    "swin_large_patch4_window12_384",
-    "swin_small_patch4_window7_224",
-    "swin_tiny_patch4_window7_224",
-    "effnetv2_s",
-    "effnetv2_m",
-    "effnetv2_l",
-    "effnetv2_xl"
+    "UNet_3Plus",
+    "UNet_3Plus_DeepSup",
+    "UNet_3Plus_DeepSup_CGM"
 ]

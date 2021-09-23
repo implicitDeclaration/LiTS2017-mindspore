@@ -14,30 +14,10 @@
 # limitations under the License.
 # ============================================================================
 
-if [ $# != 1 ] && [ $# != 2 ]
-then
-    echo "Usage: sh run_train.sh [RANK_TABLE_FILE] [cifar10|imagenet]"
-exit 1
-fi
-
-if [ ! -f $1 ]
-then
-    echo "error: RANK_TABLE_FILE=$1 is not a file"
-exit 1
-fi
 
 
-dataset_type='cifar10'
-if [ $# == 2 ]
-then
-    if [ $2 != "cifar10" ] && [ $2 != "imagenet" ]
-    then
-        echo "error: the selected dataset is neither cifar10 nor imagenet"
-    exit 1
-    fi
-    dataset_type=$2
-fi
 
+config=$2
 
 ulimit -u unlimited
 export DEVICE_NUM=8
@@ -54,11 +34,17 @@ do
     export RANK_ID=$((rank_start + i))
     rm -rf ./train_parallel$i
     mkdir ./train_parallel$i
-    cp -r ./src ./train_parallel$i
+    cp -r ./configs ./train_parallel$i
+    cp -r ./data ./train_parallel$i
+    cp -r ./scripts ./train_parallel$i
+    cp -r ./trainers ./train_parallel$i
+    cp -r ./utils ./train_parallel$i
     cp ./train.py ./train_parallel$i
-    echo "start training for rank $RANK_ID, device $DEVICE_ID, $dataset_type"
+    cp ./args.py ./train_parallel$i
+    cp ./__init__.py ./train_parallel$i
+    echo "start training for rank $RANK_ID, device $DEVICE_ID, $config"
     cd ./train_parallel$i ||exit
     env > env.log
-    python train.py --device_id=$i --dataset_name=$dataset_type> log 2>&1 &
+    python train.py --device-id $i --config $config > train$i.log 2>&1 &
     cd ..
 done

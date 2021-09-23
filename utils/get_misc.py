@@ -20,20 +20,20 @@ def set_device(args):
     device_num = int(os.environ.get("DEVICE_NUM", 1))
 
     if device_target == "Ascend":
-        if args.device_id is not None:
-            context.set_context(device_id=args.device_id)
-        else:
-            context.set_context(device_id=args.device_id)
-
         if device_num > 1:
+            context.set_context(device_id=int(os.environ["DEVICE_ID"]))
+            init(backend_name='hccl')
             context.reset_auto_parallel_context()
             context.set_auto_parallel_context(device_num=device_num, parallel_mode=ParallelMode.DATA_PARALLEL,
                                               gradients_mean=True)
-            init()
+            # context.set_auto_parallel_context(pipeline_stages=2, full_batch=True)
+
             rank = get_rank()
+        else:
+            context.set_context(device_id=args.device_id)
     elif device_target == "GPU":
         if device_num > 1:
-            init()
+            init(backend_name='nccl')
             context.reset_auto_parallel_context()
             context.set_auto_parallel_context(device_num=device_num, parallel_mode=ParallelMode.DATA_PARALLEL,
                                               gradients_mean=True)
@@ -47,14 +47,14 @@ def set_device(args):
 
 
 def get_dataset(args):
-    print(f"=> Getting {args.set} dataset")
+    print(f"==> Getting {args.set} dataset")
     dataset = getattr(data, args.set)(args)
 
     return dataset
 
 
 def get_trainer(args):
-    print(f"=> Using trainer from trainers.{args.trainer}")
+    print(f"==> Using trainer from trainers.{args.trainer}")
     trainer = importlib.import_module(f"trainers.{args.trainer}")
 
     return trainer.train, trainer.validate
@@ -62,7 +62,7 @@ def get_trainer(args):
 
 def get_model(args):
     print("==> Creating model '{}'".format(args.arch))
-    model = models.__dict__[args.arch](args)
+    model = models.__dict__[args.arch](num_classes=args.num_classes)
 
     return model
 
@@ -70,9 +70,13 @@ def get_model(args):
 def pretrained(args, model):
     if os.path.isfile(args.pretrained):
         print("=> loading pretrained weights from '{}'".format(args.pretrained))
-        if os.path.isfile(args.pretrained):
-            param_dict = load_checkpoint(args.pretrained)
-            load_param_into_net(model, param_dict)
+        param_dict = load_checkpoint(args.pretrained)
+        for key, value in param_dict.copy().items():
+            if 'head' in key:
+                if value.shape[0] != args.num_classes:
+                    print(f'==> removing {key} with shape {value.shape}')
+                    param_dict.pop(key)
+        load_param_into_net(model, param_dict)
     else:
         print("=> no pretrained weights found at '{}'".format(args.pretrained))
 

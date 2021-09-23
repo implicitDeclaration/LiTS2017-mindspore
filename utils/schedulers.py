@@ -1,11 +1,6 @@
 import numpy as np
-from mindspore import Tensor
-from mindspore import dtype as mstype
-from mindspore.ops import Assign
 
 __all__ = ["multistep_lr", "cosine_lr", "constant_lr", "get_policy", "exp_lr"]
-
-assign_op = Assign()
 
 
 def get_policy(name):
@@ -22,66 +17,76 @@ def get_policy(name):
     return out_dict[name]
 
 
-def assign_learning_rate(optimizer, new_lr):
-    new_lr = Tensor(new_lr, dtype=mstype.float32)
-    assign_op(optimizer.learning_rate, new_lr)
+def constant_lr(args, batch_num):
+    learning_rate = []
 
-
-def constant_lr(optimizer, args, **kwargs):
-    def _lr_adjuster(epoch, iteration):
+    def _lr_adjuster(epoch):
         if epoch < args.warmup_length:
-            lr = _warmup_lr(args.lr, args.warmup_length, epoch)
+            lr = _warmup_lr(args.warmup_lr, args.base_lr, args.warmup_length, epoch)
         else:
-            lr = args.lr
-
-        assign_learning_rate(optimizer, lr)
+            lr = args.base_lr
 
         return lr
 
-    return _lr_adjuster
+    for epoch in range(args.epochs):
+        for batch in range(batch_num):
+            learning_rate.append(_lr_adjuster(epoch + batch / batch_num))
+    learning_rate = np.clip(learning_rate, args.min_lr, max(learning_rate))
+    return learning_rate
 
 
-def exp_lr(optimizer, args, **kwargs):
-    def _lr_adjuster(epoch, iteration):
+def exp_lr(args, batch_num):
+    learning_rate = []
+
+    def _lr_adjuster(epoch):
         if epoch < args.warmup_length:
-            lr = _warmup_lr(args.lr, args.warmup_length, epoch)
+            lr = _warmup_lr(args.warmup_lr, args.base_lr, args.warmup_length, epoch)
         else:
-            lr = args.lr * 0.98 ** epoch
-        assign_learning_rate(optimizer, lr)
+            lr = args.base_lr * args.lr_gamma ** epoch
 
         return lr
 
-    return _lr_adjuster
+    for epoch in range(args.epochs):
+        for batch in range(batch_num):
+            learning_rate.append(_lr_adjuster(epoch + batch / batch_num))
+    learning_rate = np.clip(learning_rate, args.min_lr, max(learning_rate))
+    return learning_rate
 
 
-def cosine_lr(optimizer, args, **kwargs):
-    def _lr_adjuster(epoch, iteration):
+def cosine_lr(args, batch_num):
+    learning_rate = []
+
+    def _lr_adjuster(epoch):
         if epoch < args.warmup_length:
-            lr = _warmup_lr(args.lr, args.warmup_length, epoch)
+            lr = _warmup_lr(args.warmup_lr, args.base_lr, args.warmup_length, epoch)
         else:
             e = epoch - args.warmup_length
             es = args.epochs - args.warmup_length
-            lr = 0.5 * (1 + np.cos(np.pi * e / es)) * args.lr
-
-        assign_learning_rate(optimizer, lr)
+            lr = 0.5 * (1 + np.cos(np.pi * e / es)) * args.base_lr
 
         return lr
 
-    return _lr_adjuster
+    for epoch in range(args.epochs):
+        for batch in range(batch_num):
+            learning_rate.append(_lr_adjuster(epoch + batch / batch_num))
+    learning_rate = np.clip(learning_rate, args.min_lr, max(learning_rate))
+    return learning_rate
 
 
-def multistep_lr(optimizer, args, **kwargs):
+def multistep_lr(args, batch_num):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    learning_rate = []
 
-    def _lr_adjuster(epoch, iteration):
-        lr = args.lr * (args.lr_gamma ** (epoch // args.lr_adjust))
-
-        assign_learning_rate(optimizer, lr)
-
+    def _lr_adjuster(epoch):
+        lr = args.base_lr * (args.lr_gamma ** (epoch / args.lr_adjust))
         return lr
 
-    return _lr_adjuster
+    for epoch in range(args.epochs):
+        for batch in range(batch_num):
+            learning_rate.append(_lr_adjuster(epoch + batch / batch_num))
+    learning_rate = np.clip(learning_rate, args.min_lr, max(learning_rate))
+    return learning_rate
 
 
-def _warmup_lr(base_lr, warmup_length, epoch):
-    return base_lr * (epoch + 1) / warmup_length
+def _warmup_lr(warmup_lr, base_lr, warmup_length, epoch):
+    return epoch / warmup_length * (base_lr - warmup_lr) + warmup_lr

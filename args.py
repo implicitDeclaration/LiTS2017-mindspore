@@ -15,9 +15,12 @@ def parse_arguments():
         "-a", "--arch", metavar="ARCH", default="ResNet18", help="model architecture"
     )
     parser.add_argument(
+        "--ape", default=False, type=bool, help="absolute position embedding"
+    )
+    parser.add_argument(
         "-b",
         "--batch-size",
-        default=256,
+        default=64,
         type=int,
         metavar="N",
         help="mini-batch size (default: 256), this is the total "
@@ -34,7 +37,10 @@ def parse_arguments():
         "--config", help="Config file to use (see configs dir)", default=None
     )
     parser.add_argument(
-        "--clip-norm", default=5., type=float, help="Clip grad norm"
+        "--clip-value", default=5., type=float, help="Clip grad value"
+    )
+    parser.add_argument(
+        "--crop-size", default=320, type=int, help="crop-size"
     )
     # General Config
     parser.add_argument(
@@ -49,7 +55,7 @@ def parse_arguments():
     )
     parser.add_argument(
         "--epochs",
-        default=100,
+        default=300,
         type=int,
         metavar="N",
         help="number of total epochs to run",
@@ -58,24 +64,18 @@ def parse_arguments():
         "--eps", default=1e-8, type=float
     )
     parser.add_argument(
+        "--in-channel", default=3, type=int
+    )
+    parser.add_argument(
         "--keep-checkpoint-max",
         default=20,
         type=int,
         help="keep checkpoint max num",
     )
-    parser.add_argument(
-        "--log-dir", help="Where to save the runs. If None use ./runs", default=None
-    )
     parser.add_argument("--optimizer", help="Which optimizer to use", default="sgd")
     parser.add_argument("--set", help="name of dataset", type=str, default="ImageNet")
     parser.add_argument(
         "--graph-mode", default=0, type=int, help="graph mode with 0, python with 1"
-    )
-    parser.add_argument(
-        "--mix-up", default=0., type=float, help="mix up"
-    )
-    parser.add_argument(
-        "--mlp-ratio", help="mlp ", default=4., type=float
     )
     parser.add_argument(
         "-j",
@@ -101,7 +101,7 @@ def parse_arguments():
     parser.add_argument(
         "--wd",
         "--weight-decay",
-        default=1e-4,
+        default=0.05,
         type=float,
         metavar="W",
         help="weight decay (default: 1e-4)",
@@ -110,15 +110,7 @@ def parse_arguments():
     parser.add_argument(
         "--momentum", default=0.9, type=float, metavar="M", help="momentum"
     )
-    parser.add_argument(
-        "-p",
-        "--print-freq",
-        default=10,
-        type=int,
-        metavar="N",
-        help="print frequency (default: 10)",
-    )
-    parser.add_argument("--num-classes", default=10, type=int)
+    parser.add_argument("--num-classes", default=3, type=int)
     parser.add_argument(
         "--resume",
         default="",
@@ -127,22 +119,10 @@ def parse_arguments():
         help="path to latest checkpoint (default: none)",
     )
     parser.add_argument(
-        "--patch-norm",
-        action="store_true",
-        help="patch_norm",
-    )
-
-    parser.add_argument(
         "--evaluate",
         dest="evaluate",
         action="store_true",
         help="evaluate model on validation set",
-    )
-    parser.add_argument(
-        "--random",
-        dest="random",
-        action="store_true",
-        help="random mask matrix",
     )
     parser.add_argument(
         "--pretrained",
@@ -155,10 +135,7 @@ def parse_arguments():
         "--seed", default=None, type=int, help="seed for initializing training. "
     )
     parser.add_argument(
-        "--is_dynamic_loss_scale", default=1, type=int, help="is_dynamic_loss_scale  "
-    )
-    parser.add_argument(
-        "--loss_scale", default=65536, type=int, help="is_dynamic_loss_scale  "
+        "--is-dynamic-loss-scale", default=1, type=int, help="is_dynamic_loss_scale  "
     )
     # Learning Rate Policy Specific
     parser.add_argument(
@@ -179,7 +156,6 @@ def parse_arguments():
     parser.add_argument(
         "--lr-scheduler", default="cosine_annealing", help="Schedule for the learning rate."
     )
-
     parser.add_argument(
         "--lr-adjust", default=30, type=float, help="Interval to drop lr"
     )
@@ -190,22 +166,6 @@ def parse_arguments():
         "--name", default=None, type=str, help="Experiment name to append to filepath"
     )
     parser.add_argument(
-        "--save_every", default=-1, type=int, help="Save every ___ epochs"
-    )
-    parser.add_argument(
-        "--low-data", default=1, help="Amount of data to use", type=float
-    )
-    parser.add_argument("--mode", default="fan_in", help="Weight initialization mode")
-    parser.add_argument(
-        "--init", default="kaiming_normal", help="Weight initialization modifications"
-    )
-    parser.add_argument(
-        "--label-smoothing",
-        type=float,
-        help="Label smoothing to use, default 0.0",
-        default=0.1,
-    )
-    parser.add_argument(
         "--nesterov",
         default=False,
         action="store_true",
@@ -214,28 +174,7 @@ def parse_arguments():
     parser.add_argument(
         "--no-bn-decay", action="store_true", default=False, help="No batchnorm decay"
     )
-    parser.add_argument(
-        "--nonlinearity", default="relu", help="Nonlinearity used by initialization"
-    )
     parser.add_argument("--norm-type", default=None, help="Norm type")
-    parser.add_argument(
-        "--scale-fan", action="store_true", default=False, help="scale fan"
-    )
-    parser.add_argument(
-        "--score-init-constant",
-        type=float,
-        default=None,
-        help="Sample Baseline Subnet Init",
-    )
-    parser.add_argument(
-        "--trainer", type=str, default="default", help="cs, ss, or standard training"
-    )
-    parser.add_argument(
-        "--width-mult",
-        default=1.0,
-        help="How much to vary the width of the network.",
-        type=float,
-    )
     args = parser.parse_args()
 
     # Allow for use from notebook without config file
@@ -260,6 +199,7 @@ def get_config(args):
     print(f"=> Reading YAML config from {args.config}")
     args.__dict__.update(loaded_yaml)
     print(args)
+
 
 def run_args():
     global args

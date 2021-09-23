@@ -57,8 +57,16 @@ fi
 
 if [ $1 -gt 1 ]
 then
-    mpirun -n $1 --allow-run-as-root --output-filename log_output --merge-stderr-to-stdout \
+    mpirun -n 4 --allow-run-as-root --output-filename log_output --merge-stderr-to-stdout \
     python3 ${BASEPATH}/../train.py > train_gpu.log 2>&1 &
 else
     python3 ${BASEPATH}/../train.py > train_gpu.log 2>&1 &
 fi
+
+mpirun -n 2 --allow-run-as-root --output-filename log_output \
+--merge-stderr-to-stdout python main.py \
+--config configs/swin_small_patch4_window7_224.yaml\
+--num-parallel-workers 20 --lr 0.00025 \
+--weight-decay 0.05 --optimizer adamwself \
+--set ImageNet --graph-mode 0 --clip-value 0.05\
+--lr-scheduler cosine_lr
