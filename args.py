@@ -137,6 +137,9 @@ def parse_arguments():
     parser.add_argument(
         "--is-dynamic-loss-scale", default=1, type=int, help="is_dynamic_loss_scale  "
     )
+    parser.add_argument(
+        "--loss-type", default="dice", type=str, help="loss type"
+    )
     # Learning Rate Policy Specific
     parser.add_argument(
         "--lr",

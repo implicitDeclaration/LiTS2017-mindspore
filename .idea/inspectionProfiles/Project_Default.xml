@@ -4,7 +4,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="178">
+          <list size="181">
             <item index="0" class="java.lang.String" itemvalue="absl-py" />
             <item index="1" class="java.lang.String" itemvalue="protobuf" />
             <item index="2" class="java.lang.String" itemvalue="tensorboard" />
@@ -183,6 +183,9 @@
             <item index="175" class="java.lang.String" itemvalue="opencv_contrib_python" />
             <item index="176" class="java.lang.String" itemvalue="vispy" />
             <item index="177" class="java.lang.String" itemvalue="opencv_python" />
+            <item index="178" class="java.lang.String" itemvalue="pytoan" />
+            <item index="179" class="java.lang.String" itemvalue="omegaconf" />
+            <item index="180" class="java.lang.String" itemvalue="python-opencv" />
           </list>
         </value>
       </option>

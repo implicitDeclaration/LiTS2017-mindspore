@@ -1,6 +1,7 @@
 from mindspore.nn.loss.loss import _Loss
 
 from .bceLoss import BCELoss
+from .diceloss import DiceLoss
 from .iouLoss import IOULoss
 from .msssimLoss import MSSSIM
 
@@ -21,11 +22,8 @@ class HybridLossSeg(_Loss):
 
 
 def get_criterion(args):
-    if args.arch == 'UNet_3Plus':
-        criterion = BCELoss()
-    elif args.arch in ["UNet_3Plus_DeepSup", "UNet_3Plus_DeepSup_CGM"]:
-        #TODO: Loss Function can not run in mindspore
-        criterion = HybridLossSeg(args)
+    if args.loss_type.lower() == 'dice':
+        criterion = DiceLoss()
     else:
-        raise ValueError(f"{args.arch}'s loss has not been supported yet.")
+        raise ValueError(f"{args.loss_type} loss has not been supported yet.")
     return criterion

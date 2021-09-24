@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SwinTransformer.iml" filepath="$PROJECT_DIR$/.idea/SwinTransformer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/LiTS2017-mindspore.iml" filepath="$PROJECT_DIR$/.idea/LiTS2017-mindspore.iml" />
     </modules>
   </component>
 </project>
