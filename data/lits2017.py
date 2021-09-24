@@ -68,6 +68,14 @@ class MyIterable:
         return len(self._data)
 
 
+def random_resize_img_label(img, label):
+    img_size_w = int(np.random.randint(list(img.size())[0], list(img.size())[0] * 1.5, 1))
+    img_size_h = int(np.random.randint(list(img.size())[1], list(img.size())[1] * 1.5, 1))
+    img2 = cv2.resize(img, (img_size_w, img_size_h), interpolation=cv2.INTER_NEAREST)
+    label2 = cv2.resize(label, (img_size_w, img_size_h))
+    return img2, label2
+
+
 def random_crop_img_label(img, label):
     begin_x = random.randint(0, img.shape[0] - args.crop_size)
     begin_y = random.randint(0, img.shape[1] - args.crop_size)

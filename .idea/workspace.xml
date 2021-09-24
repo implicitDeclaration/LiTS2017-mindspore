@@ -2,14 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ccdceeb-849a-4aa0-803e-1c0288003c31" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/SwinTransformer.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/args.py" beforeDir="false" afterPath="$PROJECT_DIR$/args.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/UNet_3Plus.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/UNet_3Plus.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/criterion/criterion.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/criterion/criterion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/LiTS2017-mindspore.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LiTS2017-mindspore.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/lits2017.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/lits2017.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +22,8 @@
     <option name="showMembers" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/utils/criterion" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -46,6 +44,7 @@
       <option name="presentableId" value="Default" />
       <updated>1632444912777</updated>
       <workItem from="1632444916422" duration="901000" />
+      <workItem from="1632448913360" duration="1982000" />
     </task>
     <servers />
   </component>
