@@ -69,10 +69,11 @@ class MyIterable:
 
 
 def random_resize_img_label(img, label):
-    img_size_w = int(np.random.randint(list(img.size())[0], list(img.size())[0] * 1.5, 1))
-    img_size_h = int(np.random.randint(list(img.size())[1], list(img.size())[1] * 1.5, 1))
+    img_size_w = int(np.random.randint(img.shape[0], img.shape[0] * 1.5, 1))
+    img_size_h = int(np.random.randint(img.shape[1], img.shape[1] * 1.5, 1))
     img2 = cv2.resize(img, (img_size_w, img_size_h), interpolation=cv2.INTER_NEAREST)
     label2 = cv2.resize(label, (img_size_w, img_size_h))
+    th, label2 = cv2.threshold(src=label2, thresh=0.5, maxval=1)
     return img2, label2
 
 
@@ -82,7 +83,7 @@ def random_crop_img_label(img, label):
 
     img = img[begin_x:begin_x + args.crop_size, begin_y:begin_y + args.crop_size].copy()
     label = label[begin_x:begin_x + args.crop_size, begin_y:begin_y + args.crop_size].copy()
-    return img, label 
+    return img, label
 
 
 def flip_img_label(img, mask):
