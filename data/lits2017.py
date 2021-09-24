@@ -82,7 +82,7 @@ def random_crop_img_label(img, label):
 
     img = img[begin_x:begin_x + args.crop_size, begin_y:begin_y + args.crop_size].copy()
     label = label[begin_x:begin_x + args.crop_size, begin_y:begin_y + args.crop_size].copy()
-    return img, label
+    return img, label 
 
 
 def flip_img_label(img, mask):
